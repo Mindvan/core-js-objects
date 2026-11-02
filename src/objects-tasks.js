@@ -369,15 +369,15 @@ class Selector {
   }
 
   add(type, value, prefix, order, unique = false) {
-    if (order < this.lastOrder) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
-      );
-    }
-
     if (unique && this.used.has(type)) {
       throw new Error(
         'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+
+    if (order < this.lastOrder) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
       );
     }
 
