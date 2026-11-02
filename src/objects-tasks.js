@@ -361,6 +361,78 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
+const SelectorPart = Object.freeze({
+  ELEMENT: 0,
+  ID: 1,
+  CLASS: 2,
+  ATTRIBUTE: 3,
+  PSEUDO_CLASS: 4,
+  PSEUDO_ELEMENT: 5,
+});
+
+const UNIQUE_SELECTOR_PARTS = new Set([
+  SelectorPart.ELEMENT,
+  SelectorPart.ID,
+  SelectorPart.PSEUDO_ELEMENT,
+]);
+
+const DUPLICATE_PART_ERROR =
+  'Element, id and pseudo-element should not occur more than one time inside the selector';
+
+const INVALID_ORDER_ERROR =
+  'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element';
+
+class CompoundSelector {
+  #parts = [];
+
+  #lastPart = -1;
+
+  element(value) {
+    return this.#addPart(SelectorPart.ELEMENT, value);
+  }
+
+  id(value) {
+    return this.#addPart(SelectorPart.ID, `#${value}`);
+  }
+
+  class(value) {
+    return this.#addPart(SelectorPart.CLASS, `.${value}`);
+  }
+
+  attr(value) {
+    return this.#addPart(SelectorPart.ATTRIBUTE, `[${value}]`);
+  }
+
+  pseudoClass(value) {
+    return this.#addPart(SelectorPart.PSEUDO_CLASS, `:${value}`);
+  }
+
+  pseudoElement(value) {
+    return this.#addPart(SelectorPart.PSEUDO_ELEMENT, `::${value}`);
+  }
+
+  stringify() {
+    return this.#parts.join('');
+  }
+
+  #addPart(part, text) {
+    this.#validatePart(part);
+    this.#parts.push(text);
+    this.#lastPart = part;
+    return this;
+  }
+
+  #validatePart(part) {
+    if (part === this.#lastPart && UNIQUE_SELECTOR_PARTS.has(part)) {
+      throw new Error(DUPLICATE_PART_ERROR);
+    }
+
+    if (part < this.#lastPart) {
+      throw new Error(INVALID_ORDER_ERROR);
+    }
+  }
+}
+
 const cssSelectorBuilder = {
   element(value) {
     return new CompoundSelector().element(value);
