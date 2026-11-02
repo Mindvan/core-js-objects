@@ -361,92 +361,35 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
-class Selector {
-  constructor() {
-    this.parts = [];
-    this.lastOrder = 0;
-    this.used = new Set();
-  }
-
-  add(type, value, prefix, order, unique = false) {
-    if (unique && this.used.has(type)) {
-      throw new Error(
-        'Element, id and pseudo-element should not occur more then one time inside the selector'
-      );
-    }
-
-    if (order < this.lastOrder) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
-      );
-    }
-
-    this.parts.push(`${prefix}${value}`);
-    this.lastOrder = order;
-    this.used.add(type);
-
-    return this;
-  }
-
-  element(value) {
-    return this.add('element', value, '', 1, true);
-  }
-
-  id(value) {
-    return this.add('id', value, '#', 2, true);
-  }
-
-  class(value) {
-    return this.add('class', value, '.', 3);
-  }
-
-  attr(value) {
-    return this.add('attr', `[${value}]`, '', 4);
-  }
-
-  pseudoClass(value) {
-    return this.add('pseudoClass', value, ':', 5);
-  }
-
-  pseudoElement(value) {
-    return this.add('pseudoElement', value, '::', 6, true);
-  }
-
-  stringify() {
-    return this.parts.join('');
-  }
-}
-
 const cssSelectorBuilder = {
   element(value) {
-    return new Selector().element(value);
+    return new CompoundSelector().element(value);
   },
 
   id(value) {
-    return new Selector().id(value);
+    return new CompoundSelector().id(value);
   },
 
   class(value) {
-    return new Selector().class(value);
+    return new CompoundSelector().class(value);
   },
 
   attr(value) {
-    return new Selector().attr(value);
+    return new CompoundSelector().attr(value);
   },
 
   pseudoClass(value) {
-    return new Selector().pseudoClass(value);
+    return new CompoundSelector().pseudoClass(value);
   },
 
   pseudoElement(value) {
-    return new Selector().pseudoElement(value);
+    return new CompoundSelector().pseudoElement(value);
   },
 
   combine(selector1, combinator, selector2) {
     return {
-      stringify() {
-        return `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
-      },
+      stringify: () =>
+        `${selector1.stringify()} ${combinator} ${selector2.stringify()}`,
     };
   },
 };
